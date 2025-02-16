@@ -6,8 +6,23 @@ import FeaturedJobs from '@/components/FeaturedJobs';
 import FeatureContent from '@/components/FeatureContent';
 import { supabase } from '@/lib/supabase/client'
 
+interface Job {
+  id: string
+  title: string
+  description: string
+  employment_type: string
+  salary_type: string
+  salary_min: number
+  salary_max: number
+  prefecture: string
+  city: string
+  company_id: string
+  created_at: string
+  status: string
+}
+
 export default function Home() {
-  const [searchResults, setSearchResults] = useState([])
+  const [searchResults, setSearchResults] = useState<Job[]>([])
 
   const handleSearch = async (searchParams: {
     keyword?: string
@@ -74,7 +89,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold mb-6">検索結果</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {searchResults.map((job: any) => (
+              {searchResults.map((job) => (
                 <FeaturedJobs key={job.id} job={job} />
               ))}
             </div>

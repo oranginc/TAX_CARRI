@@ -2,7 +2,26 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function FeaturedJobs() {
+interface Job {
+  id: string
+  title: string
+  description: string
+  employment_type: string
+  salary_type: string
+  salary_min: number
+  salary_max: number
+  prefecture: string
+  city: string
+  company_id: string
+  created_at: string
+  status: string
+}
+
+interface FeaturedJobsProps {
+  job?: Job
+}
+
+export default function FeaturedJobs({ job }: FeaturedJobsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {/* サンプル求人カード */}
