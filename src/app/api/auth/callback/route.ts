@@ -6,10 +6,9 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
 
   try {
-    const code = requestUrl.searchParams.get('code')
-
     if (!code) {
       throw new Error('No code provided')
     }
@@ -24,6 +23,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL('/', requestUrl.origin))
   } catch (error) {
     console.error('Auth error:', error)
-    return NextResponse.redirect(new URL('/auth/login', requestUrl.origin))
+    return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 } 
