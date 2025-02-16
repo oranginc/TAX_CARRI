@@ -5,8 +5,9 @@ import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
+  const requestUrl = new URL(request.url)
+
   try {
-    const requestUrl = new URL(request.url)
     const code = requestUrl.searchParams.get('code')
 
     if (!code) {
@@ -20,9 +21,9 @@ export async function GET(request: Request) {
 
     await supabase.auth.exchangeCodeForSession(code)
 
-    return NextResponse.redirect(new URL('/', requestUrl))
+    return NextResponse.redirect(new URL('/', requestUrl.origin))
   } catch (error) {
     console.error('Auth error:', error)
-    return NextResponse.redirect(new URL('/auth/login', requestUrl))
+    return NextResponse.redirect(new URL('/auth/login', requestUrl.origin))
   }
 } 
