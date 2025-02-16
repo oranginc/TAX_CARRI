@@ -1,27 +1,26 @@
+import { type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
 
+export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: Request) {
-  try {
-    const requestUrl = new URL(request.url)
-    const code = requestUrl.searchParams.get('code')
+export async function GET(req: NextRequest) {
+  const cookieStore = cookies()
+  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  const { searchParams } = new URL(req.url)
+  const code = searchParams.get('code')
 
-    if (code) {
-      const cookieStore = cookies()
-      const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  if (code) {
+    try {
       await supabase.auth.exchangeCodeForSession(code)
+      return NextResponse.redirect(new URL('/', req.url))
+    } catch (error) {
+      console.error('Error exchanging code for session:', error)
+      return NextResponse.redirect(new URL('/auth/login', req.url))
     }
-
-    // URL to redirect to after sign in process completes
-    return NextResponse.redirect(requestUrl.origin)
-  } catch (error) {
-    console.error('Auth callback error:', error)
-    return NextResponse.redirect(new URL('/auth/login', request.url))
   }
-}
 
-// 必要なexportを追加
-export const runtime = 'edge' 
+  return NextResponse.redirect(new URL('/auth/login', req.url))
+} 
