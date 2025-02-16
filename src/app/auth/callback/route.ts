@@ -1,26 +1,28 @@
-import { type NextRequest } from 'next/server'
-import { NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
-export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
-export async function GET(req: NextRequest) {
-  const cookieStore = cookies()
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-  const { searchParams } = new URL(req.url)
-  const code = searchParams.get('code')
+export async function GET(request: Request) {
+  try {
+    const requestUrl = new URL(request.url)
+    const code = requestUrl.searchParams.get('code')
 
-  if (code) {
-    try {
-      await supabase.auth.exchangeCodeForSession(code)
-      return NextResponse.redirect(new URL('/', req.url))
-    } catch (error) {
-      console.error('Error exchanging code for session:', error)
-      return NextResponse.redirect(new URL('/auth/login', req.url))
+    if (!code) {
+      throw new Error('No code provided')
     }
-  }
 
-  return NextResponse.redirect(new URL('/auth/login', req.url))
+    const cookieStore = cookies()
+    const supabase = createRouteHandlerClient({
+      cookies: () => cookieStore,
+    })
+
+    await supabase.auth.exchangeCodeForSession(code)
+
+    return NextResponse.redirect(new URL('/', requestUrl))
+  } catch (error) {
+    console.error('Auth error:', error)
+    return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
 } 
