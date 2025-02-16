@@ -22,6 +22,6 @@ export const config = {
   matcher: [
     '/profile',
     '/jobs/post',
-    '/auth/callback'
+    '/api/auth/callback'
   ]
 } 
