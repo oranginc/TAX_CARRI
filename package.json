@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
+    "@supabase/auth-helpers-nextjs": "^0.8.7",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@types/react-dropzone": "^4.2.2",
