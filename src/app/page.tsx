@@ -1,10 +1,46 @@
-import React from 'react';
+'use client'
+import React, { useState } from 'react'
 import Link from 'next/link';
 import JobSearchForm from '@/components/JobSearchForm';
 import FeaturedJobs from '@/components/FeaturedJobs';
 import FeatureContent from '@/components/FeatureContent';
+import { supabase } from '@/lib/supabase/client'
 
 export default function Home() {
+  const [searchResults, setSearchResults] = useState([])
+
+  const handleSearch = async (searchParams: {
+    keyword?: string
+    location?: string
+    employmentType?: string
+  }) => {
+    let query = supabase
+      .from('jobs')
+      .select('*')
+      .eq('status', 'active')
+
+    if (searchParams.keyword) {
+      query = query.or(`title.ilike.%${searchParams.keyword}%,description.ilike.%${searchParams.keyword}%`)
+    }
+
+    if (searchParams.location) {
+      query = query.eq('prefecture', searchParams.location)
+    }
+
+    if (searchParams.employmentType) {
+      query = query.eq('employment_type', searchParams.employmentType)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching jobs:', error)
+      return
+    }
+
+    setSearchResults(data || [])
+  }
+
   return (
     <div>
       {/* メインビジュアル */}
@@ -28,22 +64,34 @@ export default function Home() {
       {/* 求人検索フォーム */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10">
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <JobSearchForm />
+          <JobSearchForm onSearch={handleSearch} />
         </div>
       </div>
 
       {/* おすすめ求人 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold mb-6">注目の求人</h2>
-        <FeaturedJobs />
-      </div>
-
-      {/* 特集コンテンツ */}
-      <div className="bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold mb-6">タクシードライバーの仕事について</h2>
-          <FeatureContent />
-        </div>
+      <div className="py-12">
+        {searchResults.length > 0 ? (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold mb-6">検索結果</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {searchResults.map((job: any) => (
+                <FeaturedJobs key={job.id} job={job} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+              <h2 className="text-2xl font-bold mb-6">注目の求人</h2>
+              <FeaturedJobs />
+            </div>
+            <div className="bg-gray-50 py-12">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <FeatureContent />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
