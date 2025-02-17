@@ -25,10 +25,11 @@ export default function SignUpPage() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/api/auth/callback`,
           data: {
             role: userType
           }
@@ -39,8 +40,8 @@ export default function SignUpPage() {
 
       router.push('/auth/verify')
     } catch (error) {
-      setError('アカウントの作成に失敗しました')
       console.error('Error signing up:', error)
+      setError('アカウントの作成に失敗しました')
     } finally {
       setIsLoading(false)
     }
