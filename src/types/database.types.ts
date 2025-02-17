@@ -19,7 +19,7 @@ export type Company = {
   // ... 他の会社情報
 };
 
-export interface Job {
+export type Job = {
   id: string;
   title: string;
   description: string;
@@ -38,13 +38,9 @@ export interface Job {
   company_id: string;
   created_at: string;
   updated_at: string;
-  images?: string[];
   companies?: {
     company_name: string;
     prefecture: string;
     city: string;
-    description: string;
-    benefits: string;
-    training_system: string;
   };
-} 
+}; 
