@@ -1,59 +1,39 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link';
 import JobSearchForm from '@/components/JobSearchForm';
 import FeaturedJobs from '@/components/FeaturedJobs';
 import FeatureContent from '@/components/FeatureContent';
 import { supabase } from '@/lib/supabase/client'
-
-interface Job {
-  id: string
-  title: string
-  description: string
-  employment_type: string
-  salary_type: string
-  salary_min: number
-  salary_max: number
-  prefecture: string
-  city: string
-  company_id: string
-  created_at: string
-  status: string
-}
+import type { Job } from '@/types/database.types'
 
 export default function Home() {
-  const [searchResults, setSearchResults] = useState<Job[]>([])
+  const [jobs, setJobs] = useState<Job[]>([])
 
-  const handleSearch = async (searchParams: {
-    keyword?: string
-    location?: string
-    employmentType?: string
-  }) => {
-    let query = supabase
-      .from('jobs')
-      .select('*')
-      .eq('status', 'active')
+  useEffect(() => {
+    fetchFeaturedJobs()
+  }, [])
 
-    if (searchParams.keyword) {
-      query = query.or(`title.ilike.%${searchParams.keyword}%,description.ilike.%${searchParams.keyword}%`)
-    }
+  const fetchFeaturedJobs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select(`
+          *,
+          companies:company_id (
+            company_name,
+            prefecture,
+            city
+          )
+        `)
+        .eq('status', 'active')
+        .limit(6)
 
-    if (searchParams.location) {
-      query = query.eq('prefecture', searchParams.location)
-    }
-
-    if (searchParams.employmentType) {
-      query = query.eq('employment_type', searchParams.employmentType)
-    }
-
-    const { data, error } = await query
-
-    if (error) {
+      if (error) throw error
+      if (data) setJobs(data)
+    } catch (error) {
       console.error('Error fetching jobs:', error)
-      return
     }
-
-    setSearchResults(data || [])
   }
 
   return (
@@ -79,34 +59,21 @@ export default function Home() {
       {/* 求人検索フォーム */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10">
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <JobSearchForm onSearch={handleSearch} />
+          <JobSearchForm />
         </div>
       </div>
 
       {/* おすすめ求人 */}
       <div className="py-12">
-        {searchResults.length > 0 ? (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+          <h2 className="text-2xl font-bold mb-6">注目の求人</h2>
+          <FeaturedJobs jobs={jobs} />
+        </div>
+        <div className="bg-gray-50 py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold mb-6">検索結果</h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {searchResults.map((job) => (
-                <FeaturedJobs key={job.id} job={job} />
-              ))}
-            </div>
+            <FeatureContent />
           </div>
-        ) : (
-          <>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-              <h2 className="text-2xl font-bold mb-6">注目の求人</h2>
-              <FeaturedJobs />
-            </div>
-            <div className="bg-gray-50 py-12">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <FeatureContent />
-              </div>
-            </div>
-          </>
-        )}
+        </div>
       </div>
     </div>
   );
