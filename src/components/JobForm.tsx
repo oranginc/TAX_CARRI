@@ -2,8 +2,8 @@
 import React, { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import Image from 'next/image'
-import type { Job } from '@/types/database.types'
 import { supabase } from '@/lib/supabase/client'
+import type { Job } from '@/types/database.types'
 
 interface JobFormProps {
   initialData?: Partial<Job>
@@ -12,7 +12,7 @@ interface JobFormProps {
 }
 
 export default function JobForm({ initialData, onSave, onSaveAsDraft }: JobFormProps) {
-  const [formData, setFormData] = useState<Partial<Job>>(initialData || {
+  const [formData, setFormData] = useState<Partial<Job>>({
     title: '',
     description: '',
     employment_type: 'full_time',
@@ -26,7 +26,9 @@ export default function JobForm({ initialData, onSave, onSaveAsDraft }: JobFormP
     required_experience: '',
     required_license: ['普通自動車第二種免許'],
     benefits: '',
-    images: []
+    status: 'draft' as const,
+    images: [] as string[],
+    ...initialData
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -144,21 +146,21 @@ export default function JobForm({ initialData, onSave, onSaveAsDraft }: JobFormP
 
         {formData.images && formData.images.length > 0 && (
           <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-            {formData.images.map((path, index) => (
+            {formData.images.map((path: string, index: number) => (
               <div key={index} className="relative">
                 <Image
                   src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/images/${path}`}
-                  alt={`求人画像 ${index + 1}`}
+                  alt={`Job image ${index + 1}`}
                   width={200}
                   height={200}
-                  className="rounded-lg"
+                  className="rounded-lg object-cover"
                 />
                 <button
                   type="button"
                   onClick={() => {
                     setFormData(prev => ({
                       ...prev,
-                      images: prev.images?.filter((_, i) => i !== index)
+                      images: prev.images?.filter((_: string, i: number) => i !== index)
                     }))
                   }}
                   className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
