@@ -1,54 +1,86 @@
 'use client'
-import React from 'react';
-import Link from 'next/link';
-
-interface Job {
-  id: string
-  title: string
-  description: string
-  employment_type: string
-  salary_type: string
-  salary_min: number
-  salary_max: number
-  prefecture: string
-  city: string
-  company_id: string
-  created_at: string
-  status: string
-}
+import React from 'react'
+import Link from 'next/link'
+import type { Job } from '@/types/database.types'
 
 interface FeaturedJobsProps {
-  job?: Job
+  jobs?: Job[]
 }
 
-export default function FeaturedJobs({ job }: FeaturedJobsProps) {
+export default function FeaturedJobs({ jobs = [] }: FeaturedJobsProps) {
+  if (!jobs || jobs.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        現在掲載中の求人はありません。
+      </div>
+    )
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* サンプル求人カード */}
-      <div className="border rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-semibold mb-2">タクシードライバー募集</h3>
-        <p className="text-gray-600 mb-4">株式会社サンプルタクシー</p>
-        <div className="space-y-2">
-          <p className="text-sm text-gray-500">
-            <span className="font-medium">給与:</span> 月給25万円〜
-          </p>
-          <p className="text-sm text-gray-500">
-            <span className="font-medium">勤務地:</span> 東京都新宿区
-          </p>
-          <p className="text-sm text-gray-500">
-            <span className="font-medium">雇用形態:</span> 正社員
-          </p>
-        </div>
-        <div className="mt-4">
-          <Link 
-            href="/jobs/1" 
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            詳細を見る →
+    <div className="space-y-4">
+      {jobs.map((job) => (
+        <div key={job.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
+          <Link href={`/jobs/${job.id}`}>
+            <div className="flex flex-col md:flex-row">
+              {/* 左側：会社情報 */}
+              <div className="w-full md:w-1/4 bg-[#f8f9fa] p-6 border-r border-gray-100">
+                <h3 className="text-lg font-bold text-[#2d2d2d] mb-2">
+                  {job.companies?.company_name}
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  {job.prefecture}{job.city}
+                </p>
+                <span className="inline-block px-3 py-1 bg-[#e3f2fd] text-[#1976d2] text-sm rounded-full">
+                  {job.employment_type === 'full_time' ? '正社員' : 
+                   job.employment_type === 'part_time' ? 'パート・アルバイト' : '契約社員'}
+                </span>
+              </div>
+
+              {/* 右側：求人詳細 */}
+              <div className="w-full md:w-3/4 p-6">
+                <h4 className="text-xl font-bold text-[#2d2d2d] mb-4">
+                  {job.title}
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-[#1976d2]">給与</span>
+                    <p className="text-base text-[#2d2d2d]">
+                      {job.salary_type === 'monthly' ? '月給' : 
+                       job.salary_type === 'daily' ? '日給' : '歩合制'}{' '}
+                      {job.salary_min.toLocaleString()}円 〜 {job.salary_max.toLocaleString()}円
+                    </p>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-[#1976d2]">勤務時間</span>
+                    <p className="text-base text-[#2d2d2d]">{job.working_hours}</p>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-600 line-clamp-2 mb-4">
+                  {job.description}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap gap-2">
+                    {job.required_license.map((license, index) => (
+                      <span 
+                        key={index}
+                        className="inline-block px-2 py-1 text-xs bg-[#f5f5f5] text-[#757575] rounded-full"
+                      >
+                        {license}
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {new Date(job.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
           </Link>
         </div>
-      </div>
-      {/* 他の求人カードも同様に */}
+      ))}
     </div>
-  );
+  )
 } 
