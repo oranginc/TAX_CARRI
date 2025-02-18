@@ -80,7 +80,7 @@ export default function Home() {
         {/* 背景画像 */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/taxi-hero.jpg"  // 画像パスを指定
+            src="/images/taxi-hero.jpg"  // このパスが正しいか確認
             alt="タクシードライバーの仕事"
             fill
             className="object-cover opacity-40"
