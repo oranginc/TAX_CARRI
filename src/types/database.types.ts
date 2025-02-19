@@ -38,6 +38,7 @@ export type Job = {
   company_id: string;
   created_at: string;
   updated_at: string;
+  images?: string[];
   companies?: {
     company_name: string;
     prefecture: string;

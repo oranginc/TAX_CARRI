@@ -3,9 +3,10 @@ import React, { useState } from 'react'
 
 interface JobSearchFormProps {
   onSearch: (params: {
-    keyword?: string
-    location?: string
+    prefecture?: string
     employmentType?: string
+    salaryType?: string
+    experience?: string
   }) => void
 }
 

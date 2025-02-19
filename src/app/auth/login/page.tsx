@@ -42,6 +42,22 @@ export default function LoginPage() {
     }
   }
 
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback`
+        }
+      })
+
+      if (error) throw error
+    } catch (error) {
+      setError('Googleログインに失敗しました')
+      console.error('Error with Google login:', error)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -108,6 +124,33 @@ export default function LoginPage() {
             </Link>
           </div>
         </form>
+
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gray-50 text-gray-500">
+                または
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <button
+              onClick={handleGoogleLogin}
+              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <img
+                className="h-5 w-5 mr-2"
+                src="https://www.google.com/favicon.ico"
+                alt="Google logo"
+              />
+              Googleでログイン
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

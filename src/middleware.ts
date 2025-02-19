@@ -2,26 +2,13 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req: request, res })
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  // 認証が必要なページへのアクセス制御
-  if (!session && request.nextUrl.pathname.startsWith('/profile')) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
-  }
-
+  const supabase = createMiddlewareClient({ req, res })
+  await supabase.auth.getSession()
   return res
 }
 
 export const config = {
-  matcher: [
-    '/profile',
-    '/jobs/post',
-    '/api/auth/callback'
-  ]
+  matcher: ['/profile', '/jobs/post', '/api/auth/callback']
 } 

@@ -5,11 +5,11 @@ import type { Job } from '@/types/database.types'
 import FavoriteButton from './FavoriteButton'
 
 interface JobListProps {
-  jobs: Job[]
+  jobs?: Job[]  // オプショナルに変更
 }
 
-export default function JobList({ jobs }: JobListProps) {
-  if (jobs.length === 0) {
+export default function JobList({ jobs = [] }: JobListProps) {
+  if (!jobs || jobs.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
         該当する求人が見つかりませんでした。

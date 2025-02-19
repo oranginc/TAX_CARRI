@@ -28,10 +28,11 @@ export default function UpdatePasswordPage() {
 
       if (error) throw error
 
-      router.push('/auth/login')
+      // パスワード更新成功
+      router.push('/auth/signin?message=パスワードが更新されました')
     } catch (error) {
-      setError('パスワードの更新に失敗しました')
       console.error('Error updating password:', error)
+      setError('パスワードの更新に失敗しました')
     } finally {
       setIsLoading(false)
     }
@@ -45,17 +46,19 @@ export default function UpdatePasswordPage() {
             新しいパスワードを設定
           </h2>
         </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <div className="text-sm text-red-700">{error}</div>
             </div>
           )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="password" className="sr-only">
-                新しいパスワード
-              </label>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              新しいパスワード
+            </label>
+            <div className="mt-1">
               <input
                 id="password"
                 name="password"
@@ -63,14 +66,16 @@ export default function UpdatePasswordPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-t-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 z-10 sm:text-sm"
-                placeholder="新しいパスワード"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div>
-              <label htmlFor="confirmPassword" className="sr-only">
-                パスワード（確認）
-              </label>
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              パスワードの確認
+            </label>
+            <div className="mt-1">
               <input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -78,8 +83,7 @@ export default function UpdatePasswordPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="appearance-none rounded-b-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 z-10 sm:text-sm"
-                placeholder="パスワード（確認）"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -88,7 +92,7 @@ export default function UpdatePasswordPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
               {isLoading ? '更新中...' : 'パスワードを更新'}
             </button>

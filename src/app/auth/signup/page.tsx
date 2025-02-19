@@ -29,15 +29,19 @@ export default function SignUpPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             role: userType
           }
         }
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('Signup error:', error)
+        throw error
+      }
 
+      console.log('Signup response:', data)
       router.push('/auth/verify')
     } catch (error) {
       console.error('Error signing up:', error)
