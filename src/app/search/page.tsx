@@ -1,6 +1,9 @@
-'use client'
-import React, { useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import JobCard from "@/components/JobCard";
+import SearchFilters from "@/components/SearchFilters";
 import JobSearchForm from '@/components/JobSearchForm'
 import JobList from '@/components/JobList'
 import Pagination from '@/components/Pagination'
@@ -9,8 +12,9 @@ import type { Job } from '@/types/database.types'
 const ITEMS_PER_PAGE = 10
 
 export default function SearchPage() {
-  const [jobs, setJobs] = useState<Job[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const searchParams = useSearchParams();
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -20,7 +24,7 @@ export default function SearchPage() {
     salaryType?: string
     experience?: string
   }) => {
-    setIsLoading(true)
+    setLoading(true)
     try {
       // Count クエリ
       const countQuery = supabase
@@ -73,7 +77,7 @@ export default function SearchPage() {
     } catch (error) {
       console.error('Error fetching jobs:', error)
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
@@ -82,31 +86,51 @@ export default function SearchPage() {
     handleSearch({}) // 現在の検索条件で再検索
   }
 
+  useEffect(() => {
+    handleSearch({})
+  }, [searchParams])
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold mb-8">求人検索</h1>
-      
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <JobSearchForm onSearch={handleSearch} />
-      </div>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">求人検索結果</h1>
 
-      {isLoading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <div className="lg:grid lg:grid-cols-12 lg:gap-8">
+        {/* フィルターサイドバー */}
+        <div className="hidden lg:block lg:col-span-3">
+          <SearchFilters />
         </div>
-      ) : (
-        <>
-          <JobList jobs={jobs} />
-          <div className="mt-8">
-            <Pagination
-              currentPage={currentPage}
-              totalItems={totalCount}
-              itemsPerPage={ITEMS_PER_PAGE}
-              onPageChange={handlePageChange}
-            />
-          </div>
-        </>
-      )}
+
+        {/* 求人一覧 */}
+        <div className="lg:col-span-9">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+              <p className="mt-4 text-gray-600">求人情報を読み込み中...</p>
+            </div>
+          ) : jobs.length > 0 ? (
+            <div className="space-y-6">
+              <JobSearchForm onSearch={handleSearch} />
+              <JobList jobs={jobs} />
+              <div className="mt-8">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={totalCount}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-600">
+                条件に一致する求人が見つかりませんでした。
+                <br />
+                検索条件を変更して再度お試しください。
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
-  )
-} 
+  );
+}
