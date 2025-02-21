@@ -11,7 +11,7 @@ export default function Home() {
       <section className="relative h-[600px] flex items-center justify-center">
         <div className="absolute inset-0">
           <Image
-            src="/images/hero.jpg"
+            src="/images/taxi-hero.jpg"
             alt="タクシードライバー"
             fill
             className="object-cover"

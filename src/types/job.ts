@@ -1,0 +1,23 @@
+export type Job = {
+  id: string;
+  title: string;
+  company_name: string;
+  prefecture: string;
+  city: string;
+  location: string;
+  salary_type: string;
+  salary_min: number;
+  salary_max: number;
+  salary: string;
+  employment_type: string;
+  experience_level: string;
+  description: string;
+  benefits: string[];
+  requirements: string[];
+  working_hours: string;
+  holidays: string;
+  insurance: string;
+  allowances: string;
+  created_at: string;
+  status: string;
+};

@@ -1,12 +1,13 @@
-'use client'
-import React from 'react'
+"use client";
 
-interface PaginationProps {
-  currentPage: number
-  totalItems: number
-  itemsPerPage: number
-  onPageChange: (page: number) => void
-}
+import { useRouter } from 'next/navigation';
+
+type PaginationProps = {
+  currentPage: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onPageChange?: (page: number) => void;
+};
 
 export default function Pagination({
   currentPage,
@@ -14,43 +15,67 @@ export default function Pagination({
   itemsPerPage,
   onPageChange,
 }: PaginationProps) {
-  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const router = useRouter();
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  if (totalPages <= 1) return null
+  const handlePageChange = (page: number) => {
+    if (onPageChange) {
+      onPageChange(page);
+    } else {
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set('page', page.toString());
+      router.push(`?${searchParams.toString()}`);
+    }
+  };
 
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
+  if (totalPages <= 1) return null;
 
   return (
-    <div className="flex justify-center space-x-2">
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        前へ
-      </button>
-      
-      {pages.map(page => (
-        <button
-          key={page}
-          onClick={() => onPageChange(page)}
-          className={`px-4 py-2 rounded-md ${
-            currentPage === page
-              ? 'bg-blue-600 text-white'
-              : 'border hover:bg-gray-50'
-          }`}
-        >
-          {page}
-        </button>
-      ))}
-      
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        次へ
-      </button>
-    </div>
-  )
-} 
+    <nav className="flex justify-center">
+      <ul className="flex items-center space-x-1">
+        {/* 前のページ */}
+        <li>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            前へ
+          </button>
+        </li>
+
+        {/* ページ番号 */}
+        {[...Array(totalPages)].map((_, i) => {
+          const page = i + 1;
+          const isCurrentPage = page === currentPage;
+
+          return (
+            <li key={page}>
+              <button
+                onClick={() => handlePageChange(page)}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${
+                  isCurrentPage
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {page}
+              </button>
+            </li>
+          );
+        })}
+
+        {/* 次のページ */}
+        <li>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            次へ
+          </button>
+        </li>
+      </ul>
+    </nav>
+  );
+}

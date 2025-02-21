@@ -1,90 +1,93 @@
 'use client'
 import React from 'react'
 import Link from 'next/link'
-import type { Job } from '@/types/database.types'
-import FavoriteButton from './FavoriteButton'
+import { Job } from '@/types/job'
 
-interface JobListProps {
-  jobs?: Job[]  // オプショナルに変更
+type JobListProps = {
+  jobs: Job[]
 }
 
-export default function JobList({ jobs = [] }: JobListProps) {
+export default function JobList({ jobs }: JobListProps) {
   if (!jobs || jobs.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        該当する求人が見つかりませんでした。
+      <div className="text-center py-12 bg-gray-50 rounded-lg">
+        <p className="text-gray-600">
+          条件に一致する求人が見つかりませんでした。
+          <br />
+          検索条件を変更して再度お試しください。
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {jobs.map((job) => (
-        <div key={job.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
-          <Link href={`/jobs/${job.id}`}>
-            <div className="flex flex-col md:flex-row">
-              {/* 左側：会社情報 */}
-              <div className="w-full md:w-1/4 bg-[#f8f9fa] p-6 border-r border-gray-100">
-                <h3 className="text-lg font-bold text-[#2d2d2d] mb-2">
-                  {job.companies?.company_name}
-                </h3>
-                <p className="text-sm text-gray-600 mb-3">
-                  {job.prefecture}{job.city}
-                </p>
-                <span className="inline-block px-3 py-1 bg-[#e3f2fd] text-[#1976d2] text-sm rounded-full">
-                  {job.employment_type === 'full_time' ? '正社員' : 
-                   job.employment_type === 'part_time' ? 'パート・アルバイト' : '契約社員'}
-                </span>
+        <div
+          key={job.id}
+          className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300"
+        >
+          <div className="p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <Link
+                  href={`/jobs/${job.id}`}
+                  className="text-xl font-semibold text-gray-900 hover:text-blue-600"
+                >
+                  {job.title}
+                </Link>
+                <p className="mt-1 text-base text-gray-600">{job.company_name}</p>
               </div>
-
-              {/* 右側：求人詳細 */}
-              <div className="w-full md:w-3/4 p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <h4 className="text-xl font-bold text-[#2d2d2d]">
-                    {job.title}
-                  </h4>
-                  <FavoriteButton jobId={job.id} />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-[#1976d2]">給与</span>
-                    <p className="text-base text-[#2d2d2d]">
-                      {job.salary_type === 'monthly' ? '月給' : 
-                       job.salary_type === 'daily' ? '日給' : '歩合制'}{' '}
-                      {job.salary_min.toLocaleString()}円 〜 {job.salary_max.toLocaleString()}円
-                    </p>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-[#1976d2]">勤務時間</span>
-                    <p className="text-base text-[#2d2d2d]">{job.working_hours}</p>
-                  </div>
-                </div>
-
-                <div className="text-sm text-gray-600 line-clamp-2 mb-4">
-                  {job.description}
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap gap-2">
-                    {job.required_license.map((license, index) => (
-                      <span 
-                        key={index}
-                        className="inline-block px-2 py-1 text-xs bg-[#f5f5f5] text-[#757575] rounded-full"
-                      >
-                        {license}
-                      </span>
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {new Date(job.created_at).toLocaleDateString()}
-                  </span>
-                </div>
+              <div className="text-sm text-gray-500">
+                {new Date(job.created_at).toLocaleDateString('ja-JP')}
               </div>
             </div>
-          </Link>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {job.location}
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                {job.employment_type}
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                {job.experience_level}
+              </span>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-base text-gray-600 line-clamp-2">
+                {job.description}
+              </p>
+            </div>
+
+            <div className="mt-4">
+              <div className="flex flex-wrap gap-2">
+                {job.benefits.map((benefit, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                  >
+                    {benefit}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-lg font-semibold text-gray-900">
+                {job.salary}
+              </div>
+              <Link
+                href={`/jobs/${job.id}`}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                詳細を見る
+              </Link>
+            </div>
+          </div>
         </div>
       ))}
     </div>
   )
-} 
+}

@@ -223,7 +223,24 @@ export default function JobDetailPage({
           <FAQ />
 
           {/* 在籍ドライバーの声 */}
-          <DriverReviews />
+          <DriverReviews reviews={[
+            {
+              id: "1",
+              driverName: "田中 健一",
+              age: 45,
+              experience: "5年",
+              comment: "以前は営業職でしたが、転職してタクシードライバーになりました。自分のペースで働けて、収入も安定しています。会社のサポート体制も充実していて、とても働きやすい環境です。",
+              rating: 5,
+            },
+            {
+              id: "2",
+              driverName: "鈴木 美咲",
+              age: 35,
+              experience: "2年",
+              comment: "女性ドライバーとして働いていますが、会社は女性が働きやすい環境づくりに力を入れています。研修制度も充実していて、未経験でも安心してスタートできました。",
+              rating: 4,
+            }
+          ]} />
         </div>
 
         {/* サイドバー */}

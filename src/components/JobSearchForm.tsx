@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 
 interface JobSearchFormProps {
-  onSearch: (params: {
+  onSearch?: (params: {
     prefecture?: string
     employmentType?: string
     salaryType?: string
@@ -20,7 +20,9 @@ export default function JobSearchForm({ onSearch }: JobSearchFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSearch(searchParams)
+    if (onSearch) {
+      onSearch(searchParams)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
