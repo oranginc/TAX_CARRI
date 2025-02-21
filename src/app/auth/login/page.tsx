@@ -105,6 +105,14 @@ export default function LoginPage() {
             </div>
           </div>
 
+          <div className="flex items-center justify-end">
+            <div className="text-sm">
+              <Link href="/auth/reset-password" className="font-medium text-blue-600 hover:text-blue-500">
+                パスワードをお忘れですか？
+              </Link>
+            </div>
+          </div>
+
           <div>
             <button
               type="submit"
