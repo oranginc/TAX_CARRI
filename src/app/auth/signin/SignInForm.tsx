@@ -173,15 +173,19 @@ export default function SignInForm() {
             </div>
           </form>
 
-          {/* Navigation Links */}
-          <div className="mt-6 grid grid-cols-2 gap-4 border-t border-gray-200 pt-6">
-            <div className="text-sm">
-              <Link href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500">
+          <div className="mt-6 space-y-4">
+            <div className="border-t border-gray-200" />
+            <div className="flex items-center justify-between">
+              <Link
+                href="/auth/signup"
+                className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              >
                 新規登録はこちら
               </Link>
-            </div>
-            <div className="text-sm text-right">
-              <Link href="/auth/reset-password" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link
+                href="/auth/reset-password"
+                className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              >
                 パスワードをお忘れですか？
               </Link>
             </div>
