@@ -15,7 +15,6 @@ export default function SignInForm() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
   useEffect(() => {
-    console.log('SignInForm mounted')
     const messageFromUrl = searchParams.get('message')
     if (messageFromUrl) {
       setMessage(messageFromUrl)
@@ -65,7 +64,6 @@ export default function SignInForm() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {console.log('Rendering SignInForm')}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
           ログイン
