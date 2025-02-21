@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 
 export default function ResetPasswordPage() {
@@ -7,9 +7,25 @@ export default function ResetPasswordPage() {
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
+
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => {
+        setCooldown(cooldown - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [cooldown])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (cooldown > 0) {
+      setError(`しばらくお待ちください。${cooldown}秒後に再試行できます。`)
+      return
+    }
+
     setIsLoading(true)
     setMessage(null)
     setError(null)
@@ -27,9 +43,14 @@ export default function ResetPasswordPage() {
 
       console.log('Password reset email sent:', data)
       setMessage('パスワードリセットのメールを送信しました。メールをご確認ください。')
+      // 60秒のクールダウンを設定
+      setCooldown(60)
     } catch (error: any) {
       console.error('Detailed error:', error)
-      if (error.message) {
+      if (error.message?.includes('rate limit')) {
+        setError('短時間に複数回のリクエストが行われました。しばらく待ってから再試行してください。')
+        setCooldown(60)
+      } else if (error.message) {
         setError(`エラー: ${error.message}`)
       } else {
         setError('パスワードリセットメールの送信に失敗しました')
@@ -84,10 +105,12 @@ export default function ResetPasswordPage() {
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || cooldown > 0}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {isLoading ? '送信中...' : 'リセットメールを送信'}
+              {isLoading ? '送信中...' : 
+               cooldown > 0 ? `再送信まで ${cooldown}秒` : 
+               'リセットメールを送信'}
             </button>
           </div>
         </form>
