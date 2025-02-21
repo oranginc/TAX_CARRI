@@ -31,6 +31,24 @@ export default function ResetPasswordPage() {
     setError(null)
 
     try {
+      // まず、このメールアドレスのユーザーが存在するか確認
+      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers({
+        filters: {
+          email: email
+        }
+      })
+
+      if (userError) {
+        console.error('Error checking user:', userError)
+        throw userError
+      }
+
+      if (!users || users.length === 0) {
+        setError('このメールアドレスは登録されていません')
+        setIsLoading(false)
+        return
+      }
+
       console.log('Attempting to reset password for:', email)
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/update-password`,
@@ -43,15 +61,26 @@ export default function ResetPasswordPage() {
 
       console.log('Password reset email sent:', data)
       setMessage('パスワードリセットのメールを送信しました。メールをご確認ください。')
-      // 60秒のクールダウンを設定
       setCooldown(60)
     } catch (error: any) {
       console.error('Detailed error:', error)
+      
+      // エラーの種類に応じてメッセージを変更
       if (error.message?.includes('rate limit')) {
         setError('短時間に複数回のリクエストが行われました。しばらく待ってから再試行してください。')
         setCooldown(60)
+      } else if (error.message?.includes('Email not confirmed')) {
+        setError('このメールアドレスはまだ確認が完了していません。')
+      } else if (error.message?.includes('Invalid email')) {
+        setError('無効なメールアドレスです。')
+      } else if (error.message?.includes('User not found')) {
+        setError('このメールアドレスは登録されていません。')
+      } else if (error.message?.includes('Service not configured')) {
+        setError('申し訳ありません。現在メール送信サービスが利用できません。管理者にお問い合わせください。')
+        console.error('Supabase email service may not be configured properly')
       } else if (error.message) {
         setError(`エラー: ${error.message}`)
+        console.error('Full error object:', error)
       } else {
         setError('パスワードリセットメールの送信に失敗しました')
       }
