@@ -177,7 +177,7 @@ export default function SignInForm() {
               </button>
             </div>
 
-            <div className="text-center">
+            <div className="text-center mt-4">
               <Link href="/auth/signup" className="text-sm font-medium text-blue-600 hover:text-blue-500">
                 新規登録はこちら
               </Link>
