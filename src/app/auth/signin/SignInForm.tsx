@@ -99,8 +99,16 @@ export default function SignInForm() {
                 className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div className="text-sm mt-2">
-              <Link href="/auth/reset-password" className="text-kango-blue-500 hover:text-kango-blue-600">
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <Link href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500">
+                新規登録はこちら
+              </Link>
+            </div>
+            <div className="text-sm">
+              <Link href="/auth/reset-password" className="font-medium text-blue-600 hover:text-blue-500">
                 パスワードをお忘れですか？
               </Link>
             </div>
@@ -128,4 +136,4 @@ export default function SignInForm() {
       </div>
     </div>
   )
-} 
+}
