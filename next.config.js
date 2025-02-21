@@ -11,6 +11,16 @@ const nextConfig = {
         destination: '/auth/signin',
         permanent: true,
       },
+      {
+        source: '/reset-password',
+        destination: '/auth/reset-password',
+        permanent: true,
+      },
+      {
+        source: '/update-password',
+        destination: '/auth/update-password',
+        permanent: true,
+      },
     ]
   },
 }
