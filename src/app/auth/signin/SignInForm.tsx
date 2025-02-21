@@ -160,6 +160,11 @@ export default function SignInForm() {
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
+              <div className="mt-2 text-right">
+                <Link href="/auth/reset-password" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+                  パスワードをお忘れですか？
+                </Link>
+              </div>
             </div>
 
             <div>
@@ -171,25 +176,13 @@ export default function SignInForm() {
                 {isLoading ? 'ログイン中...' : 'メールアドレスでログイン'}
               </button>
             </div>
-          </form>
 
-          <div className="mt-6 space-y-4">
-            <div className="border-t border-gray-200" />
-            <div className="flex items-center justify-between">
-              <Link
-                href="/auth/signup"
-                className="text-sm font-medium text-blue-600 hover:text-blue-500"
-              >
+            <div className="text-center">
+              <Link href="/auth/signup" className="text-sm font-medium text-blue-600 hover:text-blue-500">
                 新規登録はこちら
               </Link>
-              <Link
-                href="/auth/reset-password"
-                className="text-sm font-medium text-blue-600 hover:text-blue-500"
-              >
-                パスワードをお忘れですか？
-              </Link>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
