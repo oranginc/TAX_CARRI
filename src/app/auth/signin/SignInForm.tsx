@@ -15,6 +15,7 @@ export default function SignInForm() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
   useEffect(() => {
+    console.log('SignInForm mounted')
     const messageFromUrl = searchParams.get('message')
     if (messageFromUrl) {
       setMessage(messageFromUrl)
@@ -64,6 +65,7 @@ export default function SignInForm() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      {console.log('Rendering SignInForm')}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
           ログイン
@@ -103,13 +105,11 @@ export default function SignInForm() {
           </button>
 
           <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">または</span>
-              </div>
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">または</span>
             </div>
           </div>
 
@@ -174,13 +174,13 @@ export default function SignInForm() {
           </form>
 
           {/* Navigation Links */}
-          <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-6">
+          <div className="mt-6 grid grid-cols-2 gap-4 border-t border-gray-200 pt-6">
             <div className="text-sm">
               <Link href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500">
                 新規登録はこちら
               </Link>
             </div>
-            <div className="text-sm">
+            <div className="text-sm text-right">
               <Link href="/auth/reset-password" className="font-medium text-blue-600 hover:text-blue-500">
                 パスワードをお忘れですか？
               </Link>
