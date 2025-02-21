@@ -15,16 +15,25 @@ export default function ResetPasswordPage() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      console.log('Attempting to reset password for:', email)
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/update-password`,
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
 
+      console.log('Password reset email sent:', data)
       setMessage('パスワードリセットのメールを送信しました。メールをご確認ください。')
-    } catch (error) {
-      console.error('Error resetting password:', error)
-      setError('パスワードリセットメールの送信に失敗しました')
+    } catch (error: any) {
+      console.error('Detailed error:', error)
+      if (error.message) {
+        setError(`エラー: ${error.message}`)
+      } else {
+        setError('パスワードリセットメールの送信に失敗しました')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -85,4 +94,4 @@ export default function ResetPasswordPage() {
       </div>
     </div>
   )
-} 
+}
