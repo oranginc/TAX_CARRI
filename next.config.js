@@ -4,6 +4,15 @@ const nextConfig = {
   images: {
     domains: ['mmykkhhwhvnersxlusda.supabase.co'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/auth/login',
+        destination: '/auth/signin',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
