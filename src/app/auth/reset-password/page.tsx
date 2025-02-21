@@ -31,24 +31,6 @@ export default function ResetPasswordPage() {
     setError(null)
 
     try {
-      // まず、このメールアドレスのユーザーが存在するか確認
-      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers({
-        filters: {
-          email: email
-        }
-      })
-
-      if (userError) {
-        console.error('Error checking user:', userError)
-        throw userError
-      }
-
-      if (!users || users.length === 0) {
-        setError('このメールアドレスは登録されていません')
-        setIsLoading(false)
-        return
-      }
-
       console.log('Attempting to reset password for:', email)
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/update-password`,
