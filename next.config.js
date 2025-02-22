@@ -21,6 +21,17 @@ const nextConfig = {
         destination: '/auth/update-password',
         permanent: true,
       },
+      {
+        source: '/',
+        has: [
+          {
+            type: 'query',
+            key: 'code',
+          },
+        ],
+        destination: '/auth/update-password?code=:code',
+        permanent: false,
+      },
     ]
   },
 }
