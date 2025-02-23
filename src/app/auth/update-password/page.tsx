@@ -18,22 +18,27 @@ function UpdatePasswordForm() {
       return
     }
 
-    const handleCode = async () => {
+    // 自動的にコードを検証
+    const verifyCode = async () => {
       try {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        const { data, error } = await supabase.auth.verifyOtp({
+          token: code,
+          type: 'recovery'
+        })
+
         if (error) {
-          console.error('Error exchanging code:', error)
+          console.error('Error verifying code:', error)
           setError('リセットリンクが無効または期限切れです')
           setTimeout(() => router.push('/auth/signin'), 3000)
         }
       } catch (err) {
-        console.error('Error in code exchange:', err)
+        console.error('Error in code verification:', err)
         setError('認証エラーが発生しました')
         setTimeout(() => router.push('/auth/signin'), 3000)
       }
     }
 
-    handleCode()
+    verifyCode()
   }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {

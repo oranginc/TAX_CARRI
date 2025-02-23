@@ -33,10 +33,10 @@ export default function ResetPasswordPage() {
     try {
       console.log('Starting password reset process...')
       console.log('Email:', email)
-      console.log('Redirect URL:', 'https://tax-carri.vercel.app/auth/update-password')
+      console.log('Redirect URL:', `${process.env.NEXT_PUBLIC_SITE_URL || 'https://tax-carri.vercel.app'}/auth/update-password`)
 
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://tax-carri.vercel.app/auth/update-password',
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://tax-carri.vercel.app'}/auth/update-password`,
       })
 
       if (error) {
