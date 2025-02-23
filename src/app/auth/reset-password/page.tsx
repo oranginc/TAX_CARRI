@@ -31,7 +31,22 @@ export default function ResetPasswordPage() {
     setError(null)
 
     try {
-      console.log('Attempting to reset password for:', email)
+      console.log('Starting password reset process...')
+      console.log('Email:', email)
+      console.log('Redirect URL:', `${window.location.origin}/auth/update-password`)
+
+      // メールアドレスの存在確認
+      const { data: userExists } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .single()
+
+      if (!userExists) {
+        console.log('User not found in profiles table')
+        throw new Error('このメールアドレスは登録されていません')
+      }
+
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/update-password`,
       })
@@ -41,30 +56,22 @@ export default function ResetPasswordPage() {
         throw error
       }
 
-      console.log('Password reset email sent:', data)
+      console.log('Password reset response:', data)
       setMessage('パスワードリセットのメールを送信しました。メールをご確認ください。')
       setCooldown(60)
     } catch (error: any) {
       console.error('Detailed error:', error)
       
-      // エラーの種類に応じてメッセージを変更
       if (error.message?.includes('rate limit')) {
-        setError('短時間に複数回のリクエストが行われました。しばらく待ってから再試行してください。')
-        setCooldown(60)
-      } else if (error.message?.includes('Email not confirmed')) {
-        setError('このメールアドレスはまだ確認が完了していません。')
-      } else if (error.message?.includes('Invalid email')) {
-        setError('無効なメールアドレスです。')
+        setError('リクエストが多すぎます。しばらく待ってから再試行してください。')
+      } else if (error.message?.includes('Email rate limit exceeded')) {
+        setError('メール送信の制限に達しました。しばらく待ってから再試行してください。')
       } else if (error.message?.includes('User not found')) {
         setError('このメールアドレスは登録されていません。')
-      } else if (error.message?.includes('Service not configured')) {
-        setError('申し訳ありません。現在メール送信サービスが利用できません。管理者にお問い合わせください。')
-        console.error('Supabase email service may not be configured properly')
-      } else if (error.message) {
-        setError(`エラー: ${error.message}`)
-        console.error('Full error object:', error)
+      } else if (error.message?.includes('Email not confirmed')) {
+        setError('このメールアドレスはまだ確認されていません。')
       } else {
-        setError('パスワードリセットメールの送信に失敗しました')
+        setError('パスワードリセットメールの送信に失敗しました。もう一度お試しください。')
       }
     } finally {
       setIsLoading(false)
@@ -79,7 +86,7 @@ export default function ResetPasswordPage() {
             パスワードをリセット
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            登録したメールアドレスを入力してください
+            登録したメールアドレスを入力してください。
           </p>
         </div>
 
@@ -89,7 +96,7 @@ export default function ResetPasswordPage() {
               <div className="text-sm text-green-700">{message}</div>
             </div>
           )}
-          
+
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <div className="text-sm text-red-700">{error}</div>
@@ -119,9 +126,7 @@ export default function ResetPasswordPage() {
               disabled={isLoading || cooldown > 0}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {isLoading ? '送信中...' : 
-               cooldown > 0 ? `再送信まで ${cooldown}秒` : 
-               'リセットメールを送信'}
+              {isLoading ? '送信中...' : cooldown > 0 ? `${cooldown}秒後に再試行可能` : 'リセットメールを送信'}
             </button>
           </div>
         </form>
