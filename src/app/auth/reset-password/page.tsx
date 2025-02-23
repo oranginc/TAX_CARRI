@@ -33,22 +33,10 @@ export default function ResetPasswordPage() {
     try {
       console.log('Starting password reset process...')
       console.log('Email:', email)
-      console.log('Redirect URL:', `${window.location.origin}/auth/update-password`)
-
-      // メールアドレスの存在確認
-      const { data: userExists } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .single()
-
-      if (!userExists) {
-        console.log('User not found in profiles table')
-        throw new Error('このメールアドレスは登録されていません')
-      }
+      console.log('Redirect URL:', 'https://tax-carri.vercel.app/auth/update-password')
 
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
+        redirectTo: 'https://tax-carri.vercel.app/auth/update-password',
       })
 
       if (error) {
