@@ -15,7 +15,32 @@ export default function UpdatePasswordPage() {
     const code = searchParams?.get('code')
     if (!code) {
       router.push('/auth/signin')
+      return
     }
+
+    // Handle code from root path
+    if (window.location.pathname === '/') {
+      router.replace(`/auth/update-password?code=${code}`)
+      return
+    }
+
+    // Exchange code for session
+    const handleCode = async () => {
+      try {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error) {
+          console.error('Error exchanging code:', error)
+          setError('リセットリンクが無効または期限切れです')
+          setTimeout(() => router.push('/auth/signin'), 3000)
+        }
+      } catch (err) {
+        console.error('Error in code exchange:', err)
+        setError('認証エラーが発生しました')
+        setTimeout(() => router.push('/auth/signin'), 3000)
+      }
+    }
+
+    handleCode()
   }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,21 +61,11 @@ export default function UpdatePasswordPage() {
     }
 
     try {
-      const code = searchParams?.get('code')
-      if (!code) {
-        throw new Error('リセットコードが見つかりません')
-      }
-
-      // コードを使用してセッションを更新
-      const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code)
-      if (sessionError) throw sessionError
-
-      // パスワードを更新
-      const { error: updateError } = await supabase.auth.updateUser({
+      const { error } = await supabase.auth.updateUser({
         password: password
       })
 
-      if (updateError) throw updateError
+      if (error) throw error
 
       // パスワード更新成功
       router.push('/auth/signin?message=パスワードが更新されました')
