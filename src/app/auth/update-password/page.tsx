@@ -1,10 +1,11 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 
 export default function UpdatePasswordPage() {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -19,7 +20,7 @@ export default function UpdatePasswordPage() {
     }
 
     // Handle code from root path
-    if (window.location.pathname === '/') {
+    if (pathname === '/') {
       router.replace(`/auth/update-password?code=${code}`)
       return
     }
@@ -41,7 +42,7 @@ export default function UpdatePasswordPage() {
     }
 
     handleCode()
-  }, [searchParams, router])
+  }, [searchParams, router, pathname])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
