@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, Suspense } from 'react'
+import React, { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 
@@ -10,45 +10,18 @@ function UpdatePasswordForm() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [isVerified, setIsVerified] = useState(false)
-
-  useEffect(() => {
-    const code = searchParams?.get('code')
-    if (!code) {
-      router.push('/auth/signin')
-      return
-    }
-
-    // コードを検証
-    const verifyCode = async () => {
-      try {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-        if (error) {
-          console.error('Error verifying code:', error)
-          setError('リセットリンクが無効または期限切れです')
-          setTimeout(() => router.push('/auth/signin'), 3000)
-          return
-        }
-        setIsVerified(true)
-      } catch (err) {
-        console.error('Error in code verification:', err)
-        setError('認証エラーが発生しました')
-        setTimeout(() => router.push('/auth/signin'), 3000)
-      }
-    }
-
-    verifyCode()
-  }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isVerified) {
-      setError('認証が完了していません。ページを再読み込みしてください。')
-      return
-    }
-
     setIsLoading(true)
     setError(null)
+
+    const code = searchParams?.get('code')
+    if (!code) {
+      setError('リセットコードが見つかりません')
+      setIsLoading(false)
+      return
+    }
 
     if (password !== confirmPassword) {
       setError('パスワードが一致しません')
@@ -63,18 +36,35 @@ function UpdatePasswordForm() {
     }
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      // まず、パスワードリセットトークンを検証
+      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+        token: code,
+        type: 'recovery',
+      })
+
+      if (verifyError) {
+        console.error('Error verifying reset token:', verifyError)
+        throw new Error('リセットリンクが無効または期限切れです')
+      }
+
+      // パスワードを更新
+      const { error: updateError } = await supabase.auth.updateUser({
         password: password
       })
 
-      if (error) throw error
+      if (updateError) {
+        console.error('Error updating password:', updateError)
+        throw updateError
+      }
 
       // パスワード更新成功
       router.push('/auth/signin?message=パスワードが更新されました')
     } catch (error: any) {
-      console.error('Error updating password:', error)
-      if (error.message?.includes('Invalid code')) {
-        setError('リセットリンクが無効または期限切れです')
+      console.error('Password reset error:', error)
+      if (error.message?.includes('expired')) {
+        setError('リセットリンクの有効期限が切れています。新しいリセットメールを送信してください。')
+      } else if (error.message?.includes('invalid')) {
+        setError('リセットリンクが無効です。新しいリセットメールを送信してください。')
       } else {
         setError('パスワードの更新に失敗しました: ' + error.message)
       }
@@ -89,6 +79,14 @@ function UpdatePasswordForm() {
         <div className="max-w-md w-full space-y-8">
           <div className="rounded-md bg-red-50 p-4">
             <div className="text-sm text-red-700">{error}</div>
+          </div>
+          <div className="text-center">
+            <button
+              onClick={() => router.push('/auth/reset-password')}
+              className="text-sm text-blue-600 hover:text-blue-500"
+            >
+              パスワードリセットを再リクエスト
+            </button>
           </div>
         </div>
       </div>
@@ -144,7 +142,7 @@ function UpdatePasswordForm() {
           <div>
             <button
               type="submit"
-              disabled={isLoading || !isVerified}
+              disabled={isLoading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
               {isLoading ? '更新中...' : 'パスワードを更新'}
