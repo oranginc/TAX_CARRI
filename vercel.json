@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "api/flights/*": {
+      "memory": 3008,
+      "maxDuration": 60
+    }
+  },
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "framework": "nextjs"
+} 
