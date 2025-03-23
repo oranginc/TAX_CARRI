@@ -1,5 +1,10 @@
 import { Suspense } from 'react'
-import SignInForm from './SignInForm'
+import dynamic from 'next/dynamic'
+
+const SignInForm = dynamic(() => import('./SignInForm'), {
+  loading: () => <div>Loading...</div>,
+  ssr: false
+})
 
 export default function SignInPage() {
   return (

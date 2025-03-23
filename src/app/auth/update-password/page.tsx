@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 
@@ -38,6 +38,7 @@ function UpdatePasswordForm() {
     try {
       // まず、パスワードリセットトークンを検証
       const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+        email: searchParams?.get('email') || '',
         token: code,
         type: 'recovery',
       })
