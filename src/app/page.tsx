@@ -78,6 +78,12 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      <div className="flex justify-center mt-6">
+        <a href="/flights" className="px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300">
+          羽田空港フライト情報を表示
+        </a>
+      </div>
     </div>
   );
 }

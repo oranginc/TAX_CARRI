@@ -1,0 +1,35 @@
+# Stage 1: Install dependencies
+FROM node:18-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Stage 2: Build the application
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# No need for ARG/export here if .env.production is copied
+
+# Copy .env.production for build time
+COPY .env.production .env.production
+RUN npm run build
+
+# Stage 3: Production environment
+FROM node:18-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV production
+ENV PORT 8080 # Match Cloud Run deployment config in cloudbuild.yaml
+
+# Copy necessary files from builder stage using standalone output
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+# Copy .env.production for runtime (Cloud Run env vars should override)
+COPY --from=builder /app/.env.production .env.production
+# Removed duplicate copy of .env.production
+
+EXPOSE 8080
+# Explicitly pass the PORT environment variable to the node process
+CMD ["node", "server.js"]
