@@ -16,6 +16,8 @@ import json
 
 # 国際線APIをインポート
 import intl_api_code as intl_api
+# 追加: 国際線グラフ用関数をインポート
+from intl_api_code import get_t2_flight_plot_json, get_other_flight_plot_json
 
 # FastAPIアプリケーションの作成
 app = FastAPI(
@@ -149,7 +151,7 @@ class HanedaFlightScraper:
 async def fetch_flight_data():
     """フライトデータを取得しDataFrameに変換する関数"""
     global latest_flight_data, last_update_time
-    
+
     try:
         print("スクレイピングを開始します...")
         async with HanedaFlightScraper() as scraper:
@@ -167,20 +169,20 @@ async def fetch_flight_data():
 
             # データをPandasのDataFrameに変換
             df = pd.DataFrame(flights)
-            
+
             # ゲートがないデータをスキップ（ゲートが空またはNaNの行を削除）
             df = df[df['gate'].notna() & (df['gate'] != '')]
             print(f"有効なフライト数: {len(df)}")
-            
+
             if len(df) == 0:
                 print("有効なフライトデータがありません")
                 return None
-            
+
             # 結果を保存
             latest_flight_data = df
             last_update_time = datetime.now()
             print("スクレイピングが完了しました")
-            
+
             return df
     except Exception as e:
         import traceback
@@ -208,90 +210,90 @@ def generate_plots(df):
     # プロットフォルダを作成
     if not os.path.exists('plots'):
         os.makedirs('plots')
-    
+
     # データの整形
     df['scheduledTime'] = pd.to_datetime(df['scheduledTime'], format='%H:%M:%S', errors='coerce')
-    
+
     # 15分ごとに時刻を丸める
     df['time_15min'] = df['scheduledTime'].dt.floor('15T')
-    
+
     # ゲート番号を数値に変換
     df['gate_numeric'] = df['gate'].str.extract('(\d+)').astype(float)
-    
+
     # ゲートグループ列を追加
     df['gate_group'] = df.apply(gate_group, axis=1)
-    
+
     # プロットのファイルパスリスト
     plot_paths = []
-    
+
     # ターミナルとゲートグループごとの15分毎の到着便数を集計してグラフを作成
     terminals = df['terminal'].unique()
     for terminal in terminals:
         terminal_data = df[df['terminal'] == terminal]
         gate_groups = terminal_data['gate_group'].unique()
-        
+
         for group in gate_groups:
             if group == 'その他':
                 continue
-                
+
             group_data = terminal_data[terminal_data['gate_group'] == group]
-            
+
             # 15分ごとの到着便数を集計
             plt.figure(figsize=(10, 6))
             counts_15min = group_data.groupby('time_15min')['gate'].value_counts().unstack(fill_value=0)
             counts_15min.plot(kind='bar', stacked=True)
-            
+
             plt.xlabel('時間（15分間隔）')
             plt.ylabel('到着便数')
             plt.title(f'{terminal}ターミナル - ゲート{group} - 15分間隔')
             plt.xticks(rotation=45)
             plt.tight_layout()
-            
+
             plot_path = f'plots/{terminal}_gate_{group}_15min.png'
             plt.savefig(plot_path)
             plt.close()
-            
+
             plot_paths.append(plot_path)
-    
+
     # 画像ファイルを結合
     if plot_paths:
         gate_group_order = ['NO1', 'NO2', 'NO3', 'NO4']
         output_path = 'plots/combined_plots_vertical.png'
         combine_images_vertical(plot_paths, output_path, gate_group_order)
         return output_path
-    
+
     return None
 
 def combine_images_vertical(image_paths, output_path, order):
     """画像を縦に結合する関数"""
     images = {os.path.basename(path).split('_')[1]: Image.open(path) for path in image_paths}
     ordered_images = [images[group] for group in order if group in images]
-    
+
     if not ordered_images:
         return None
-    
+
     widths, heights = zip(*(i.size for i in ordered_images))
     max_width = max(widths)
     total_height = sum(heights)
-    
+
     new_im = Image.new('RGB', (max_width, total_height))
-    
+
     y_offset = 0
     for im in ordered_images:
         new_im.paste(im, (0, y_offset))
         y_offset += im.size[1]
-    
+
     new_im.save(output_path)
     return output_path
 
 async def process_data():
     """データを取得して処理する非同期関数"""
     global is_processing
-    
+
     if is_processing:
         print("既に処理中です")
         return
-    
+
     async with processing_lock:
         is_processing = True
         try:
@@ -321,26 +323,26 @@ async def get_flights():
     """フライト情報を取得するエンドポイント"""
     try:
         global latest_flight_data, last_update_time, is_processing
-        
+
         if is_processing:
             return JSONResponse(
                 status_code=503,
                 content={"status": "processing", "message": "データ取得中です"}
             )
-        
+
         if latest_flight_data is None:
             is_processing = True
             try:
                 latest_flight_data = await fetch_flight_data()
             finally:
                 is_processing = False
-        
+
         if latest_flight_data is None:
             return JSONResponse(
                 status_code=404,
                 content={"status": "error", "message": "フライトデータが見つかりません"}
             )
-        
+
         return {
             "status": "success",
             "data": latest_flight_data.to_dict(orient='records'),
@@ -357,20 +359,20 @@ async def get_flights():
 async def get_flight_plot():
     """フライト情報のグラフを取得するエンドポイント"""
     global latest_flight_data
-    
+
     # データがない場合は取得
     if latest_flight_data is None:
         await process_data()
-    
+
     if latest_flight_data is None:
         raise HTTPException(status_code=404, detail="フライトデータがありません")
-    
+
     # グラフ生成
     combined_plot_path = generate_plots(latest_flight_data)
-    
+
     if not combined_plot_path or not os.path.exists(combined_plot_path):
         raise HTTPException(status_code=404, detail="グラフの生成に失敗しました")
-    
+
     return FileResponse(combined_plot_path)
 
 @app.post("/flights/refresh")
@@ -390,42 +392,42 @@ class FilterParams(BaseModel):
 async def filter_flights(params: FilterParams):
     """フライト情報をフィルタするエンドポイント"""
     global latest_flight_data
-    
+
     if latest_flight_data is None:
         await process_data()
-    
+
     if latest_flight_data is None:
         raise HTTPException(status_code=404, detail="フライトデータがありません")
-    
+
     df = latest_flight_data.copy()
-    
+
     # 時刻データの変換
     df['scheduledTime'] = pd.to_datetime(df['scheduledTime'], format='%H:%M:%S', errors='coerce')
-    
+
     # ゲート番号を数値に変換
     df['gate_numeric'] = df['gate'].str.extract('(\d+)').astype(float)
-    
+
     # ゲートグループ列を追加
     df['gate_group'] = df.apply(gate_group, axis=1)
-    
+
     # フィルタリング
     if params.terminal:
         df = df[df['terminal'] == params.terminal]
-    
+
     if params.gate_group:
         df = df[df['gate_group'] == params.gate_group]
-    
+
     if params.time_from:
         time_from = pd.to_datetime(params.time_from).time()
         df = df[df['scheduledTime'].dt.time >= time_from]
-    
+
     if params.time_to:
         time_to = pd.to_datetime(params.time_to).time()
         df = df[df['scheduledTime'].dt.time <= time_to]
-    
+
     # DataFrameをJSON形式に変換
     filtered_flights = df.to_dict(orient="records")
-    
+
     return {
         "data": filtered_flights,
         "count": len(filtered_flights)
@@ -435,7 +437,7 @@ async def filter_flights(params: FilterParams):
 async def get_status():
     """APIの状態情報を取得するエンドポイント"""
     global latest_flight_data, last_update_time, is_processing
-    
+
     return {
         "status": "processing" if is_processing else "idle",
         "has_data": latest_flight_data is not None,
@@ -463,11 +465,21 @@ async def get_international_other_flights():
 async def get_international_t2_flights():
     """国際線のT2フライト情報を取得"""
     return await intl_api.get_t2_flights()
+# 不要なエンドポイントをコメントアウト
+# @app.get("/intl/flights/plot")
+# async def get_international_flight_plot():
+#     """国際線フライト数のグラフを取得"""
+#     return await intl_api.get_flight_plot() # これは古いか、フロントエンドで使用されていない
 
-@app.get("/intl/flights/plot")
-async def get_international_flight_plot():
-    """国際線フライト数のグラフを取得"""
-    return await intl_api.get_flight_plot()
+@app.get("/intl/flights/plot/t2/json")
+async def get_intl_t2_plot_json():
+    """国際線T2フライト情報のグラフ(JSON)を取得"""
+    return await get_t2_flight_plot_json() # インポートした関数を呼び出す
+
+@app.get("/intl/flights/plot/other/json")
+async def get_intl_other_plot_json():
+    """国際線T3(その他)フライト情報のグラフ(JSON)を取得"""
+    return await get_other_flight_plot_json() # インポートした関数を呼び出す
 
 @app.post("/intl/flights/refresh")
 async def refresh_international_flights(background_tasks: BackgroundTasks):
